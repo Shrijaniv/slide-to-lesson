@@ -1,0 +1,2 @@
+# The Python scripts use only the standard library.
+# FFmpeg and Swift/PDFKit are system tools; run ./setup.sh to check/install them.

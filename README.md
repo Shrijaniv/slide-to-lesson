@@ -4,7 +4,7 @@ A Codex skill for turning PDF lecture slides into a lesson that **teaches the co
 
 ## Install
 
-Clone this repository, then copy the repository folder to your Codex skills directory as `slide-to-lesson` (for example, `~/.codex/skills/slide-to-lesson`). Start a new Codex chat to make the skill available.
+Clone this repository, run `./setup.sh`, then copy the repository folder to your Codex skills directory as `slide-to-lesson` (for example, `~/.codex/skills/slide-to-lesson`). Start a new Codex chat to make the skill available.
 
 ## Requirements
 
@@ -12,6 +12,8 @@ Clone this repository, then copy the repository folder to your Codex skills dire
 - FFmpeg and FFprobe for video assembly
 - Python 3
 - The macOS `say` command for the default local voice; an ElevenLabs account is optional
+
+`requirements.txt` is intentionally empty of packages because the Python scripts use only the standard library. `./setup.sh` installs missing Python or FFmpeg through Homebrew and checks for Swift. If Swift is missing, install Apple's Command Line Tools using the command printed by the script.
 
 The skill's [SKILL.md](SKILL.md) describes the teaching workflow. The scripts only assemble material; they do not write the lesson, generate animations, or verify the academic content.
 
