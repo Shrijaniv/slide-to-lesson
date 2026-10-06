@@ -11,19 +11,26 @@ Clone this repository, then copy the repository folder to your Codex skills dire
 - macOS with Swift and PDFKit for rendering PDF slides
 - FFmpeg and FFprobe for video assembly
 - Python 3
-- The macOS `say` command for built-in narration, or one supplied audio clip per slide
+- The macOS `say` command for the default local voice; an ElevenLabs account is optional
 
 The skill's [SKILL.md](SKILL.md) describes the teaching workflow. The scripts only assemble material; they do not write the lesson, generate animations, or verify the academic content.
 
 ## Build a video
 
-Write a UTF-8 `narration.json` array with one nonempty string per PDF slide. Then run:
+Have Codex write a UTF-8 `narration.json` array with one nonempty string per PDF slide. The command below generates speech with a local macOS voice and assembles the lesson. You do not need to record or prepare audio clips:
 
 ```bash
 python3 scripts/build_video.py slides.pdf narration.json lesson.mp4
 ```
 
-For an external voice provider, supply audio files named `slide-01.mp3`, `slide-02.mp3`, and so on. WAV, M4A, and AIFF also work. To replace selected still slides with silent explanatory animations, supply clips named `slide-01.mp4`, and so on:
+For an ElevenLabs voice, set `ELEVENLABS_API_KEY` in your shell and select `--tts elevenlabs`. The default voice is George; pass `--voice-id` to choose another voice. The script sends the narration text to ElevenLabs and uses your account's quota. Keep the key out of files and chat messages.
+
+```bash
+export ELEVENLABS_API_KEY='your-key'
+python3 scripts/build_video.py slides.pdf narration.json lesson.mp4 --tts elevenlabs
+```
+
+If you already have audio from another source, `--audio-dir` accepts one file per slide named `slide-01.mp3`, `slide-02.mp3`, and so on (also WAV, M4A, AIFF). To replace selected still slides with silent explanatory animations, supply clips named `slide-01.mp4`, and so on:
 
 ```bash
 python3 scripts/build_video.py slides.pdf narration.json lesson.mp4 \

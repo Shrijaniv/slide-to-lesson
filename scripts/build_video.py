@@ -8,6 +8,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -51,10 +53,37 @@ def slide_visual(folder, index):
     return visual if visual.is_file() else None
 
 
-def make_video(pdf, scripts, output, voice, audio_dir=None, visual_dir=None):
+def elevenlabs_audio(script, path, voice_id, model):
+    key = os.environ.get("ELEVENLABS_API_KEY", "").strip()
+    if not key:
+        raise ValueError("ELEVENLABS_API_KEY is not set. Export it in your shell before using --tts elevenlabs.")
+    request = urllib.request.Request(
+        f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}?output_format=mp3_44100_128",
+        data=json.dumps({"text": script, "model_id": model}).encode("utf-8"),
+        headers={"xi-api-key": key, "Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=120) as response:
+            audio = response.read()
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(f"ElevenLabs request failed (HTTP {exc.code}). Check your API key, voice, model, and account quota.") from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(f"Could not reach ElevenLabs: {exc.reason}") from exc
+    if not audio:
+        raise RuntimeError("ElevenLabs returned empty audio.")
+    path.write_bytes(audio)
+
+
+def make_video(pdf, scripts, output, voice, audio_dir=None, visual_dir=None,
+               tts="local", voice_id="JBFqnCBsd6RMkjVDRZzb", model="eleven_multilingual_v2"):
     if not pdf.is_file() or pdf.suffix.lower() != ".pdf":
         raise ValueError("Input must be an existing PDF slide deck.")
-    for cmd in (("swift", "ffmpeg", "ffprobe") if audio_dir else ("swift", "say", "ffmpeg", "ffprobe")):
+    if audio_dir and tts != "local":
+        raise ValueError("Choose either --audio-dir or --tts elevenlabs.")
+    if tts == "elevenlabs" and not os.environ.get("ELEVENLABS_API_KEY", "").strip():
+        raise ValueError("ELEVENLABS_API_KEY is not set. Export it in your shell before using --tts elevenlabs.")
+    for cmd in (("swift", "ffmpeg", "ffprobe") if audio_dir or tts == "elevenlabs" else ("swift", "say", "ffmpeg", "ffprobe")):
         if not shutil.which(cmd):
             raise RuntimeError(f"Missing required command: {cmd}")
     if audio_dir and not audio_dir.is_dir():
@@ -79,6 +108,9 @@ def make_video(pdf, scripts, output, voice, audio_dir=None, visual_dir=None):
             print(f"Rendering slide {index}/{len(pages)}", flush=True)
             if audio_dir:
                 audio = slide_audio(audio_dir, index)
+            elif tts == "elevenlabs":
+                audio = folder / f"speech-{index:03}.mp3"
+                elevenlabs_audio(script, audio, voice_id, model)
             else:
                 speech = folder / f"speech-{index:03}.txt"
                 speech.write_text(script, encoding="utf-8")
@@ -88,7 +120,7 @@ def make_video(pdf, scripts, output, voice, audio_dir=None, visual_dir=None):
             try:
                 spoken_seconds = audio_duration(audio, cache)
             except RuntimeError as exc:
-                if not audio_dir:
+                if not audio_dir and tts == "local":
                     raise RuntimeError("The selected Mac voice produced no audio. Try another voice or check macOS speech settings.") from exc
                 raise
             seconds = spoken_seconds + 0.35
@@ -132,11 +164,15 @@ if __name__ == "__main__":
     parser.add_argument("--voice", default="Samantha")
     parser.add_argument("--audio-dir", type=Path, help="Use one existing audio file per slide instead of Mac speech")
     parser.add_argument("--visual-dir", type=Path, help="Use optional silent slide-XX.mp4 animations in place of selected slide images")
+    parser.add_argument("--tts", choices=("local", "elevenlabs"), default="local", help="Generate narration automatically (default: local macOS voice)")
+    parser.add_argument("--voice-id", default="JBFqnCBsd6RMkjVDRZzb", help="ElevenLabs voice ID (default: George)")
+    parser.add_argument("--model", default="eleven_multilingual_v2", help="ElevenLabs model ID")
     args = parser.parse_args()
     try:
         make_video(args.slides.resolve(), args.narration.resolve(), args.output.resolve(),
                    args.voice, args.audio_dir.resolve() if args.audio_dir else None,
-                   args.visual_dir.resolve() if args.visual_dir else None)
+                   args.visual_dir.resolve() if args.visual_dir else None,
+                   args.tts, args.voice_id, args.model)
     except (ValueError, RuntimeError, OSError, json.JSONDecodeError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
