@@ -4,7 +4,22 @@ A Codex skill for turning PDF lecture slides into a lesson that **teaches the co
 
 ## Install
 
-Clone this repository, run `./setup.sh`, then copy the repository folder to your Codex skills directory as `slide-to-lesson` (for example, `~/.codex/skills/slide-to-lesson`). Start a new Codex chat to make the skill available.
+For a global Codex skill install with the Skills CLI:
+
+```bash
+npx skills add Shrijaniv/slide-to-lesson -g -a codex -y
+```
+
+To install it as a Codex plugin from this repository's marketplace:
+
+```bash
+codex plugin marketplace add Shrijaniv/slide-to-lesson
+codex plugin add slide-to-lesson@slide-to-lesson-marketplace
+```
+
+Start a new chat after installation. This GitHub marketplace is separate from the public Plugins Directory; the plugin has not been submitted there.
+
+You can also clone this repository and copy `skills/slide-to-lesson` into your Codex skills directory, typically `~/.codex/skills/slide-to-lesson`.
 
 ## Requirements
 
@@ -13,29 +28,29 @@ Clone this repository, run `./setup.sh`, then copy the repository folder to your
 - Python 3
 - The macOS `say` command for the default local voice; an ElevenLabs account is optional
 
-`requirements.txt` is intentionally empty of packages because the Python scripts use only the standard library. `./setup.sh` installs missing Python or FFmpeg through Homebrew and checks for Swift. If Swift is missing, install Apple's Command Line Tools using the command printed by the script.
+The skill's `requirements.txt` is intentionally empty of packages because the Python scripts use only the standard library. After installing the skill, run its `setup.sh` once on the machine that will render videos. It installs missing Python or FFmpeg through Homebrew and checks for Swift. If Swift is missing, install Apple's Command Line Tools using the command printed by the script. For a cloned repository, run `./skills/slide-to-lesson/setup.sh`.
 
-The skill's [SKILL.md](SKILL.md) describes the teaching workflow. The scripts only assemble material; they do not write the lesson, generate animations, or verify the academic content.
+The skill's [SKILL.md](skills/slide-to-lesson/SKILL.md) describes the teaching workflow. The scripts only assemble material; they do not write the lesson, generate animations, or verify the academic content.
 
 ## Build a video
 
 Have Codex write a UTF-8 `narration.json` array with one nonempty string per PDF slide. The command below generates speech with a local macOS voice and assembles the lesson. You do not need to record or prepare audio clips:
 
 ```bash
-python3 scripts/build_video.py slides.pdf narration.json lesson.mp4
+python3 skills/slide-to-lesson/scripts/build_video.py slides.pdf narration.json lesson.mp4
 ```
 
 For an ElevenLabs voice, set `ELEVENLABS_API_KEY` in your shell and select `--tts elevenlabs`. The default voice is George; pass `--voice-id` to choose another voice. The script sends the narration text to ElevenLabs and uses your account's quota. Keep the key out of files and chat messages.
 
 ```bash
 export ELEVENLABS_API_KEY='your-key'
-python3 scripts/build_video.py slides.pdf narration.json lesson.mp4 --tts elevenlabs
+python3 skills/slide-to-lesson/scripts/build_video.py slides.pdf narration.json lesson.mp4 --tts elevenlabs
 ```
 
 If you already have audio from another source, `--audio-dir` accepts one file per slide named `slide-01.mp3`, `slide-02.mp3`, and so on (also WAV, M4A, AIFF). To replace selected still slides with silent explanatory animations, supply clips named `slide-01.mp4`, and so on:
 
 ```bash
-python3 scripts/build_video.py slides.pdf narration.json lesson.mp4 \
+python3 skills/slide-to-lesson/scripts/build_video.py slides.pdf narration.json lesson.mp4 \
   --audio-dir audio --visual-dir visuals
 ```
 
@@ -60,7 +75,7 @@ Write `quizzes.json` as an array of checks. For example:
 Build the local player next to the MP4:
 
 ```bash
-python3 scripts/build_interactive.py lesson.mp4 lesson-timings.json quizzes.json lesson.html
+python3 skills/slide-to-lesson/scripts/build_interactive.py lesson.mp4 lesson-timings.json quizzes.json lesson.html
 ```
 
 Open `lesson.html` in a browser. The player pauses for each check, explains the answer, and lets the learner skip. Keep the HTML and MP4 in the same directory when sharing. The MP4 plays independently without interactive checks.

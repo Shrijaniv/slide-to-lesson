@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "slide-to-lesson",
+  "version": "0.1.0",
+  "description": "Turn lecture slides into detailed narrated lessons with optional animations and concept checks.",
+  "author": {
+    "name": "Shrijaniv",
+    "url": "https://github.com/Shrijaniv"
+  },
+  "repository": "https://github.com/Shrijaniv/slide-to-lesson",
+  "license": "MIT",
+  "keywords": ["education", "lectures", "video", "slides"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Slide to Lesson",
+        "shortDescription": "Teach from slides with narrated video and concept checks",
+        "longDescription": "Create detailed explanations from lecture slides, assemble narrated videos, and add optional animations and interactive concept checks.",
+        "developerName": "Shrijaniv",
+        "category": "Education"
+      }
+    }
+  }
+}

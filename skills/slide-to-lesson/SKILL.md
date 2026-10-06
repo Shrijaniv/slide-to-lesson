@@ -7,6 +7,8 @@ description: Teach concepts from lecture slides in a detailed narrated video, wi
 
 The teaching is the product. Write the explanation from the actual slides, then choose visuals that help a learner build a correct mental model. The builder uses the original slides by default and can substitute a silent animation for any slide. Voice generation remains separate so users can choose a local or external provider.
 
+Before rendering on a new Mac, run `setup.sh` in this skill directory to install or check the system tools. A Skills CLI or plugin install copies the skill files but does not run this setup script automatically.
+
 ## Workflow
 
 1. Get the user's slide deck. For PowerPoint or Keynote, use an available local export tool to create a PDF; otherwise ask for a PDF export. Work from the actual slides, not filenames or a summary.

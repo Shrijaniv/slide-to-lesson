@@ -1,0 +1,20 @@
+{
+  "name": "slide-to-lesson-marketplace",
+  "interface": {
+    "displayName": "Slide to Lesson"
+  },
+  "plugins": [
+    {
+      "name": "slide-to-lesson",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Education"
+    }
+  ]
+}
